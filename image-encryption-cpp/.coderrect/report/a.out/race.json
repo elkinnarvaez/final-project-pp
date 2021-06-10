@@ -1,0 +1,11 @@
+raceData = 
+{"bcfile":"/home/elkin/Documents/final-project/image-encryption-cpp/.coderrect/build/a.out.bc","dataRaces":[],"deadLocks":[],"generatedAt":"Thu 10 Jun 2021 01:57:34 AM","mismatchedAPIs":[],"orderViolations":[],"toctou":[],"version":1};
+verData={"Version":"(hpc) 1.0.0 build 1614743351","EnableMismatchedAPIs":true};
+
+// --------------- below are new data --------------------------- //
+comparedWithBase=true
+newDataRaces = [];
+newToctous = [];
+newMismatchedAPIs = [];
+baseGitCommitLog = "b5a3139 Merge pull request #5 from rrbarioni/output-readme";
+currGitCommitLog  = "b5a3139 Merge pull request #5 from rrbarioni/output-readme";

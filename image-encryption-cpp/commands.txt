@@ -1,0 +1,4 @@
+g++ encryption.cpp -o a.out `pkg-config opencv --cflags --libs`
+g++ decryption.cpp -o a.out `pkg-config opencv --cflags --libs`
+g++ encryption.cpp -fopenmp -o a.out `pkg-config opencv --cflags --libs`
+coderrect -t g++ encryption.cpp -fopenmp -o a.out `pkg-config opencv --cflags --libs`
