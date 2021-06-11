@@ -235,11 +235,11 @@ vector<int> multiply_sequential2(vector<int> const& a, vector<int> const& b) {
     fa.resize(n);
     fb.resize(n);
 
-    fft_parallel2(fa, false);
-    fft_parallel2(fb, false);
+    fft_sequential2(fa, false);
+    fft_sequential2(fb, false);
     for (int i = 0; i < n; i++)
         fa[i] *= fb[i];
-    fft_parallel2(fa, true);
+    fft_sequential2(fa, true);
 
     vector<int> ans(n);
     for (int i = 0; i < n; i++)
@@ -257,12 +257,48 @@ void running_time_multiple_cases(){
             a[i] = rand() % 10 + 1;
             b[i] = rand() % 10 + 1;
         }
-        start = omp_get_wtime();
-        multiply_parallel2(a, b);
-        end = omp_get_wtime();
-        elapsed = end - start;
-        printf("%d %f\n", n, elapsed);
+        int num_iter = 5;
+        double sum_time = 0;
+        double running_times[num_iter];
+        for(int i = 0; i < num_iter; i++){
+            start = omp_get_wtime();
+            multiply_sequential2(a, b);
+            end = omp_get_wtime();
+            sum_time = sum_time + (end - start);
+            running_times[i] = (end - start);
+        }
+        printf("%d %f %d", n, sum_time/num_iter, num_iter);
+        for(int i = 0; i < num_iter; i++){
+            printf(" %f", running_times[i]);
+        }
+        printf("\n");
     }
+}
+
+void running_time_single_case(){
+    int n = (int)pow(2, 24);
+    double start, end, elapsed;
+    vector<int> a(n), b(n);
+    srand (time(NULL));
+    for(int i = 0; i < n; i++){
+        a[i] = rand() % 10 + 1;
+        b[i] = rand() % 10 + 1;
+    }
+    int num_iter = 1;
+    double sum_time = 0;
+    double running_times[num_iter];
+    for(int i = 0; i < num_iter; i++){
+        start = omp_get_wtime();
+        multiply_sequential2(a, b);
+        end = omp_get_wtime();
+        sum_time = sum_time + (end - start);
+        running_times[i] = (end - start);
+    }
+    printf("%d %f %d", n, sum_time/num_iter, num_iter);
+    for(int i = 0; i < num_iter; i++){
+        printf(" %f", running_times[i]);
+    }
+    printf("\n");
 }
 
 void fft_test(){
@@ -276,11 +312,11 @@ void fft_test(){
 void multiply_test(){
 	vector<int> a = {5, 6, -3, 6, 8, 17, -9, 1};
     vector<int> b = {7, 4, 8, -3, 7};
-    vector<int> ans = multiply_parallel2(a, b);
+    vector<int> ans = multiply_sequential2(a, b);
     print_vector_int(ans);
 }
 
 int main(){
-    running_time_multiple_cases();
+    running_time_single_case();
     return 0;
 }

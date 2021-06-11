@@ -2,6 +2,7 @@
 #include <tgmath.h>
 #include <omp.h>
 #include <time.h>
+#include <mpi.h>
 
 using namespace std;
 
@@ -138,7 +139,7 @@ vector<int> multiply_parallel2(vector<int> const& a, vector<int> const& b) {
         n <<= 1;
     fa.resize(n);
     fb.resize(n);
-
+    
     fft_parallel2(fa, false);
     fft_parallel2(fb, false);
     for (int i = 0; i < n; i++)
@@ -230,24 +231,33 @@ void fft_sequential2(vector<cd> & a, bool invert) {
 vector<int> multiply_sequential2(vector<int> const& a, vector<int> const& b) {
     vector<cd> fa(a.begin(), a.end()), fb(b.begin(), b.end());
     int n = 1;
+    int rank;
     while (n < a.size() + b.size())
         n <<= 1;
     fa.resize(n);
     fb.resize(n);
-
-    fft_parallel2(fa, false);
-    fft_parallel2(fb, false);
-    for (int i = 0; i < n; i++)
-        fa[i] *= fb[i];
-    fft_parallel2(fa, true);
-
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if(rank == 0){
+        fft_parallel2(fa, false);
+    }
+    else if(rank == 1){
+        fft_parallel2(fb, false);
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
     vector<int> ans(n);
-    for (int i = 0; i < n; i++)
-        ans[i] = round(fa[i].real());
+    if(rank == 0){
+        for (int i = 0; i < n; i++)
+            fa[i] *= fb[i];
+        fft_parallel2(fa, true);
+
+        for (int i = 0; i < n; i++)
+            ans[i] = round(fa[i].real());
+    }
     return ans;
 }
 
 void running_time_multiple_cases(){
+    int rank;
     int N = (int)pow(2, 24);
     double start, end, elapsed;
     for(int n = 2; n <= N; n *= 2){
@@ -261,7 +271,10 @@ void running_time_multiple_cases(){
         multiply_parallel2(a, b);
         end = omp_get_wtime();
         elapsed = end - start;
-        printf("%d %f\n", n, elapsed);
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if(rank == 0){
+            printf("%d %f\n", n, elapsed);
+        }
     }
 }
 
@@ -274,13 +287,18 @@ void fft_test(){
 }
 
 void multiply_test(){
+    int rank;
 	vector<int> a = {5, 6, -3, 6, 8, 17, -9, 1};
     vector<int> b = {7, 4, 8, -3, 7};
-    vector<int> ans = multiply_parallel2(a, b);
-    print_vector_int(ans);
+    vector<int> ans = multiply_sequential(a, b);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if(rank == 0){
+        print_vector_int(ans);
+    }
 }
 
-int main(){
+int main(int argc, char* argv[]){
+    MPI_Init(&argc, &argv);
     running_time_multiple_cases();
     return 0;
 }
