@@ -43,14 +43,14 @@ void fft_parallel(vector<cd> & a, bool invert) {
             fft_parallel(a1, invert);
     }
 
-    #pragma omp single nowait
-    {
-        #pragma omp task
-            fft_parallel(a0, invert);
-        #pragma omp task
-            fft_parallel(a1, invert);
-    }
-    #pragma omp taskwait
+    // #pragma omp single nowait
+    // {
+    //     #pragma omp task
+    //         fft_parallel(a0, invert);
+    //     #pragma omp task
+    //         fft_parallel(a1, invert);
+    // }
+    // #pragma omp taskwait
 
     double ang = 2 * PI / n * (invert ? -1 : 1);
     cd w(1), wn(cos(ang), sin(ang));
