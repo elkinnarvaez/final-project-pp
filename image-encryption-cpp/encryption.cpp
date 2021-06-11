@@ -1,6 +1,8 @@
 #include <bits/stdc++.h>
 #include <opencv2/opencv.hpp>
 #include <omp.h>
+#include <time.h>
+#include <sys/time.h>
 
 using namespace cv;
 using namespace std;
@@ -21,8 +23,10 @@ int main()
   double u=3.94;         
   vector<pair<double,int >> x;
   Vec<unsigned char, 3>  pixel;
-
-  image = imread("Image/sample_image_grey.jpg", 0 );
+  struct  timeval  t0 , t1;
+  double start, stop;
+  
+  image = imread("Image/img2.png", 1);
   if ( !image.data )
   {
     cout<<"No image data \n";
@@ -41,8 +45,8 @@ int main()
   sort(x.begin(), x.end());
 
   imshow("Original image", image);
-  waitKey(0);
-
+  //waitKey(0);
+  start = omp_get_wtime();
   i=0;
   for(int r = 0; r < image.rows; ++r) {
     for(int c = 0; c < image.cols; ++c) {
@@ -59,7 +63,7 @@ int main()
   }
 
   imshow("permutated image", image);
-  waitKey(0);
+  //waitKey(0);
   
   for(int r = 0; r < image.rows; ++r) {
     for(int c = 0; c < image.cols; ++c) {
@@ -77,50 +81,69 @@ int main()
 
   imwrite("Image/encrypted_image.jpg",image);
   imshow("Encrypted image", image);
-  waitKey(0);
+  //waitKey(0);
 
-  i=1;
-  for(int r = 0; r < image.rows; ++r) {
-    for(int c = 0; c < image.cols; ++c) {
-      if(i>100){
-        i=1;
-      }
-      l=x[i].first*MAX;
-      l=l%255;
-      image.at<Vec3b>(r,c)[0]=image.at<Vec3b>(r,c)[0]^l;
-      image.at<Vec3b>(r,c)[1]=image.at<Vec3b>(r,c)[1]^l;
-      image.at<Vec3b>(r,c)[2]=image.at<Vec3b>(r,c)[2]^l;
-      i++;
-    }
+  // i=1;
+  // for(int r = 0; r < image.rows; ++r) {
+  //   for(int c = 0; c < image.cols; ++c) {
+  //     if(i>100){
+  //       i=1;
+  //     }
+  //     l=x[i].first*MAX;
+  //     l=l%255;
+  //     image.at<Vec3b>(r,c)[0]=image.at<Vec3b>(r,c)[0]^l;
+  //     image.at<Vec3b>(r,c)[1]=image.at<Vec3b>(r,c)[1]^l;
+  //     image.at<Vec3b>(r,c)[2]=image.at<Vec3b>(r,c)[2]^l;
+  //     i++;
+  //   }
+  // }
+
+  int r, c;
+  // #pragma omp parallel for private(i, l, r, c)
+  for(int j = 0; j < image.rows*image.cols; ++j){
+    i = j%100 + 1;
+    l=x[i].first*MAX;
+    l=l%255;
+    r = j/image.rows;
+    c = j%image.cols;
+    image.at<Vec3b>(r,c)[0]=image.at<Vec3b>(r,c)[0]^l;
+    image.at<Vec3b>(r,c)[1]=image.at<Vec3b>(r,c)[1]^l;
+    image.at<Vec3b>(r,c)[2]=image.at<Vec3b>(r,c)[2]^l;
   }
 
   imshow("Decrepted Diffused image", image);
-  waitKey(0);
+  //waitKey(0);
 
-  double start, stop;
+  // i=511;
+  // for(int r = image.rows-1; r >= 0; --r) {
+  //   for(int c = image.cols-1; c >= 0 ; --c) {
+  //     if(i<0)
+  //       i=511;
+  //     int temps= x[i].second;
 
-  start = omp_get_wtime();
-  i=511;
-  #pragma omp parallel for private(i, l)
-  for(int r = image.rows-1; r >= 0; --r) {
-    for(int c = image.cols-1; c >= 0 ; --c) {
-      if(i<0)
-        i=511;
-      int temps= x[i].second;
+  //     pixel= image.at<Vec3b>(r,temps);
+  //     image.at<Vec3b>(r,temps)=image.at<Vec3b>(r,c);
+  //     image.at<Vec3b>(r,c)=pixel;
+  //     i--;
+  //   }
+  // }
 
-      pixel= image.at<Vec3b>(r,temps);
-      image.at<Vec3b>(r,temps)=image.at<Vec3b>(r,c);
-      image.at<Vec3b>(r,c)=pixel;
-      i--;
-    }
+  // #pragma omp parallel for private(i, r, c, pixel)
+  for(int j = image.rows*image.cols - 1; j >= 0; --j) {
+    i = (511 - (image.rows*image.cols - 1 - j)%512);
+    int temps= x[i].second;
+    r = j/image.rows;
+    c = j%image.cols;
+    pixel= image.at<Vec3b>(r,temps);
+    image.at<Vec3b>(r,temps)=image.at<Vec3b>(r,c);
+    image.at<Vec3b>(r,c)=pixel;
   }
-  stop = omp_get_wtime();
-  printf("time: %f\n", stop - start);
 
   namedWindow("Decrepted", WINDOW_AUTOSIZE );
   imshow("Decrepted", image);
+  stop = omp_get_wtime();
+  printf("time: %f\n", stop - start);
   waitKey(0);
-
   return 0;
 
 }

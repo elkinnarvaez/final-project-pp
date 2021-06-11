@@ -2,7 +2,7 @@
  "Executables": [
   {
    "Name": "a.out",
-   "RaceJSON": "/home/elkin/Documents/final-project/image-encryption-cpp/.coderrect/build/raw_a.out.json",
+   "RaceJSON": "/home/elkin/Documents/final-project-pp/image-encryption-cpp/.coderrect/build/raw_a.out.json",
    "DataRaces": 0,
    "NewBugs": false
   }
