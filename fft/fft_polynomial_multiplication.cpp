@@ -257,26 +257,26 @@ void running_time_multiple_cases(){
             a[i] = rand() % 10 + 1;
             b[i] = rand() % 10 + 1;
         }
-        int num_iter = 5;
+        int num_iter = 1;
         double sum_time = 0;
         double running_times[num_iter];
         for(int i = 0; i < num_iter; i++){
             start = omp_get_wtime();
-            multiply_sequential2(a, b);
+            multiply_parallel2(a, b);
             end = omp_get_wtime();
             sum_time = sum_time + (end - start);
             running_times[i] = (end - start);
         }
-        printf("%d %f %d", n, sum_time/num_iter, num_iter);
-        for(int i = 0; i < num_iter; i++){
-            printf(" %f", running_times[i]);
-        }
-        printf("\n");
+        printf("%d %f\n", n, sum_time/num_iter);
+        // for(int i = 0; i < num_iter; i++){
+        //     printf(" %f", running_times[i]);
+        // }
+        // printf("\n");
     }
 }
 
 void running_time_single_case(){
-    int n = (int)pow(2, 24);
+    int n = (int)pow(2, 23);
     double start, end, elapsed;
     vector<int> a(n), b(n);
     srand (time(NULL));
@@ -289,7 +289,7 @@ void running_time_single_case(){
     double running_times[num_iter];
     for(int i = 0; i < num_iter; i++){
         start = omp_get_wtime();
-        multiply_sequential2(a, b);
+        multiply_parallel2(a, b);
         end = omp_get_wtime();
         sum_time = sum_time + (end - start);
         running_times[i] = (end - start);
@@ -299,6 +299,38 @@ void running_time_single_case(){
         printf(" %f", running_times[i]);
     }
     printf("\n");
+}
+
+void data_incidence_evaluation(){
+    int num_times = 10;
+    for(int k = 0; k < num_times; k++){
+        int N = (int)pow(2, 24);
+        double start, end, elapsed;
+        for(int n = 2; n <= N; n *= 2){
+            vector<int> a(n), b(n);
+            srand (time(NULL));
+            for(int i = 0; i < n; i++){
+                a[i] = rand() % 10 + 1;
+                b[i] = rand() % 10 + 1;
+            }
+            int num_iter = 1;
+            double sum_time = 0;
+            double running_times[num_iter];
+            for(int i = 0; i < num_iter; i++){
+                start = omp_get_wtime();
+                multiply_parallel2(a, b);
+                end = omp_get_wtime();
+                sum_time = sum_time + (end - start);
+                running_times[i] = (end - start);
+            }
+            printf("%d %f\n", n, sum_time/num_iter);
+            // for(int i = 0; i < num_iter; i++){
+            //     printf(" %f", running_times[i]);
+            // }
+            // printf("\n");
+        }
+        printf("---\n");
+    }
 }
 
 void fft_test(){
@@ -312,11 +344,11 @@ void fft_test(){
 void multiply_test(){
 	vector<int> a = {5, 6, -3, 6, 8, 17, -9, 1};
     vector<int> b = {7, 4, 8, -3, 7};
-    vector<int> ans = multiply_sequential2(a, b);
+    vector<int> ans = multiply_parallel2(a, b);
     print_vector_int(ans);
 }
 
 int main(){
-    running_time_single_case();
+    running_time_multiple_cases();
     return 0;
 }
